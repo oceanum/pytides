@@ -1,3 +1,6 @@
+2020-11-27 - Release 0.0.5
+-Fixed relative import
+
 2013-11-24 - Release 0.0.3
 -Fixed highs() and lows()
 -Made at() use partition method rather than recurse.

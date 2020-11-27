@@ -14,11 +14,11 @@ It is recommended that all interactions with pytides which require times to be s
 
 ## Installation
 
-```easy_install pytides```
+```easy_install pytides2```
 
 or
 
-```pip install pytides```
+```pip install pytides2```
 
 should do the trick.
 
