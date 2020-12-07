@@ -35,9 +35,7 @@ jobs:
       
     - name: Install dependencies
       run: |
-        poetry run pip install --upgrade pip
         poetry install
-        poetry add --dev pytest-cov
       
     - name: Code quality
       run: poetry run black . --check
