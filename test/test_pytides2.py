@@ -11,7 +11,7 @@ def test_Tide() -> None:
     from pytides2.tide import Tide
 
     data = np.genfromtxt(
-        "D:/Documents/00SelfProject/pytides/test/data/water_level.csv",
+        "test/data/water_level.csv",
         dtype=np.dtype([("datetime", datetime), ("water_level", float)]),
         delimiter=",",
     )
