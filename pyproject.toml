@@ -2,7 +2,8 @@
 name = "pytides2"
 version = "0.0.5"
 description = "fork of pytides by sam cox, compatible with newer version of python"
-authors = ["Sam Cox <sam.cox@cantab.net>", "Sahit Sadono <sahit.tuntas.s@mail.ugm.ac.id>"]
+authors = "Sam Cox <sam.cox@cantab.net>"
+maintainers= "Sahit Sadono <sahit.tuntas.s@mail.ugm.ac.id>"
 homepage = "https://github.com/sahitono/pytides"
 repository = "https://github.com/sahitono/pytides"
 readme = "README.md"
