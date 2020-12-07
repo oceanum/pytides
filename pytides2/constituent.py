@@ -1,14 +1,16 @@
 import operator as op
 import string
 from functools import reduce
+from typing import Any, Callable, Dict, List, Optional, Tuple, Union
 
 import numpy as np
 
 from . import nodal_corrections as nc
+from .astro import AstronomicalParameter
 
 
 class BaseConstituent(object):
-    xdo_int = {
+    xdo_int: Dict[str, int] = {
         "A": 1,
         "B": 2,
         "C": 3,
@@ -37,52 +39,66 @@ class BaseConstituent(object):
         "Z": 0,
     }
 
-    int_xdo = {v: k for k, v in xdo_int.items()}
+    int_xdo: Dict[int, str] = {v: k for k, v in xdo_int.items()}
 
-    def __init__(self, name, xdo="", coefficients=[], u=nc.u_zero, f=nc.f_unity):
+    def __init__(
+        self,
+        name: str,
+        xdo: str = "",
+        coefficients: List[int] = [],
+        u: Callable[[Any], float] = nc.u_zero,
+        f: Callable[[Any], float] = nc.f_unity,
+    ) -> None:
         if xdo == "":
-            self.coefficients = np.array(coefficients)
+            self.coefficients: np.ndarray = np.array(coefficients)
         else:
             self.coefficients = np.array(self.xdo_to_coefficients(xdo))
         self.name = name
         self.u = u
         self.f = f
 
-    def xdo_to_coefficients(self, xdo):
+    def xdo_to_coefficients(self, xdo: str) -> List[int]:
         return [self.xdo_int[l.upper()] for l in xdo if l in string.ascii_letters]
 
-    def coefficients_to_xdo(self, coefficients):
+    def coefficients_to_xdo(self, coefficients: List[int]) -> str:
         return "".join([self.int_xdo[c] for c in coefficients])
 
-    def V(self, astro):
+    def V(self, astro: np.ndarray) -> np.ndarray:
         return np.dot(self.coefficients, self.astro_values(astro))
 
-    def xdo(self):
+    def xdo(self) -> str:
         return self.coefficients_to_xdo(self.coefficients)
 
-    def speed(self, a):
+    def speed(self, a: Dict[str, AstronomicalParameter]) -> np.ndarray:
         return np.dot(self.coefficients, self.astro_speeds(a))
 
-    def astro_xdo(self, a):
+    def astro_xdo(
+        _, a: Dict[str, AstronomicalParameter]
+    ) -> List[AstronomicalParameter]:
         return [a["T+h-s"], a["s"], a["h"], a["p"], a["N"], a["pp"], a["90"]]
 
-    def astro_speeds(self, a):
+    def astro_speeds(self, a: Dict[str, AstronomicalParameter]) -> np.ndarray:
         return np.array([each.speed for each in self.astro_xdo(a)])
 
-    def astro_values(self, a):
+    def astro_values(self, a: Dict[str, AstronomicalParameter]) -> np.ndarray:
         return np.array([each.value for each in self.astro_xdo(a)])
 
     # Consider two out of phase constituents which travel at the same speed to
     # be identical
-    def __eq__(self, c):
+    def __eq__(self, c: Any) -> Any:
         return np.all(self.coefficients[:-1] == c.coefficients[:-1])
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash(tuple(self.coefficients[:-1]))
 
 
 class CompoundConstituent(BaseConstituent):
-    def __init__(self, members=[], **kwargs):
+    def __init__(
+        self, members: Optional[List[Tuple[BaseConstituent, int]]] = None, **kwargs: Any
+    ) -> None:
+        if members is None:
+            raise ValueError
+
         self.members = members
 
         if "u" not in kwargs:
@@ -94,17 +110,17 @@ class CompoundConstituent(BaseConstituent):
 
         self.coefficients = reduce(op.add, [c.coefficients * n for (c, n) in members])
 
-    def speed(self, a):
-        return reduce(op.add, [n * c.speed(a) for (c, n) in self.members])
+    def speed(self, a: Dict[str, AstronomicalParameter]) -> Union[float, int]:
+        return sum([n * c.speed(a) for (c, n) in self.members])
 
-    def V(self, a):
-        return reduce(op.add, [n * c.V(a) for (c, n) in self.members])
+    def V(self, a: Dict[str, AstronomicalParameter]) -> Union[float, int]:
+        return sum([n * c.V(a) for (c, n) in self.members])
 
-    def u(self, a):
-        return reduce(op.add, [n * c.u(a) for (c, n) in self.members])
+    def u(self, a: Dict[str, AstronomicalParameter]) -> Union[float, int]:
+        return sum([n * c.u(a) for (c, n) in self.members])
 
-    def f(self, a):
-        return reduce(op.mul, [c.f(a) ** abs(n) for (c, n) in self.members])
+    def f(self, a: Dict[str, AstronomicalParameter]) -> Union[Any, float, int]:
+        return np.prod([c.f(a) ** abs(n) for (c, n) in self.members])
 
 
 ###### Base Constituents
@@ -122,8 +138,8 @@ _K1 = BaseConstituent(name="K1", xdo="A AZZ ZZY", u=nc.u_K1, f=nc.f_K1)
 _J1 = BaseConstituent(name="J1", xdo="A BZY ZZY", u=nc.u_J1, f=nc.f_J1)
 
 # M1 is a tricky business for reasons of convention, rather than theory.  The
-# reasons for this are best summarised by Schureman paragraphs 126, 127 and in
-# the comments found in congen_input.txt of xtides, so I won't go over all this
+# reasons for this are best summarized by Schureman paragraphs 126, 127 and in
+# the comments found in congen_input.txt of x tides, so I won't go over all this
 # again here.
 
 _M1 = BaseConstituent(name="M1", xdo="A ZZZ ZZA", u=nc.u_M1, f=nc.f_M1)
