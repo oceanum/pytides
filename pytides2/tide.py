@@ -1,5 +1,6 @@
 from collections import OrderedDict
 from collections.abc import Iterable
+from dataclasses import dataclass
 from datetime import datetime, timedelta
 from itertools import count, takewhile
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Union
@@ -16,6 +17,12 @@ d2r: float = np.pi / 180.0
 r2d: float = 180.0 / np.pi
 
 
+@dataclass
+class TideDataSource:
+    times: List[datetime]
+    water_levels: np.ndarray
+
+
 class Tide(object):
     dtype = np.dtype([("constituent", object), ("amplitude", float), ("phase", float)])
 
@@ -26,6 +33,7 @@ class Tide(object):
         phases: Optional[List[float]] = None,
         model: np.ndarray = None,
         radians: bool = False,
+        source: Optional[TideDataSource] = None,
     ) -> None:
         """
         Initialise a tidal model. Provide constituents, amplitudes and phases OR a model.
@@ -57,6 +65,11 @@ class Tide(object):
             model["phase"] = r2d * model["phase"]
         self.model: np.ndarray = model[:]
         self.normalize()
+
+        self.source = source
+        self.model_dict: Dict[str, Dict[str, float]] = {}
+        for m, a, p in self.model:
+            self.model_dict[m] = {"amplitude": a, "phase": p}
 
     def prepare(
         self, *args, **kwargs
@@ -109,11 +122,22 @@ class Tide(object):
             u = [d2r * each for each in u]
         return speed, u, f, V0
 
+    def plot(self) -> None:
+        if self.source is not None:
+            pass
+
     def at(self, t: List[datetime]) -> np.ndarray:
-        """
-        Return the modelled tidal height at given times.
-        Arguments:
-        t -- array of times at which to evaluate the tidal height
+        """Calculate tidal height at given times
+
+        Parameters
+        ----------
+        t : List[datetime]
+            array of times at which to evaluate the tidal height
+
+        Returns
+        -------
+        np.ndarray
+            the modelled tidal height at given times.
         """
         t0 = t[0]
         hours = self._hours(t0, t)
@@ -132,10 +156,12 @@ class Tide(object):
         )
 
     def highs(self, *args) -> Generator[float, None, None]:
-        """
-        Generator yielding only the high tides.
-        Arguments:
-        see Tide.extrema()
+        """yielding only the high tides
+
+        Yields
+        -------
+        Generator[float, None, None]
+            see Tide.extrema()
         """
         for t in filter(lambda e: e[2] == "H", self.extrema(*args)):
             yield t
@@ -491,8 +517,22 @@ class Tide(object):
             model[1:]["phase"] = lsq[0][n:]
 
             if full_output:
-                return cls(model=model, radians=True), lsq
-            return cls(model=model, radians=True), None
+                return (
+                    cls(
+                        model=model,
+                        radians=True,
+                        source=TideDataSource(times=t, water_levels=heights),
+                    ),
+                    lsq,
+                )
+            return (
+                cls(
+                    model=model,
+                    radians=True,
+                    source=TideDataSource(times=t, water_levels=heights),
+                ),
+                None,
+            )
         else:
             raise ValueError(
                 "Must provide t(datetimes), or t(hours) and "

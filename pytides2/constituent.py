@@ -10,6 +10,18 @@ from .astro import AstronomicalParameter
 
 
 class BaseConstituent(object):
+    """Base class for constituent
+
+    Parameters
+    ----------
+    object : [type]
+        [description]
+
+    Returns
+    -------
+    [type]
+        [description]
+    """
     xdo_int: Dict[str, int] = {
         "A": 1,
         "B": 2,
