@@ -14,31 +14,11 @@ It is recommended that all interactions with pytides which require times to be s
 
 ## Installation
 
-```easy_install pytides2```
-
-or
-
 ```pip install pytides2```
 
-should do the trick.
-
-Mainly for my own reference (sanity), to get pytides and its dependencies all working in a Debian (mint) virtualenv:
-```
-sudo apt-get install liblapack-dev libatlas-base-dev gfortran
-export LAPACK=/usr/lib/liblapack.so
-export ATLAS=/usr/lib/libatlas.so
-export BLAS=/usr/lib/libblas.so
-pip install numpy
-pip install scipy
-pip install pytides
-```
-and you'll probably want to
-```
-pip install matplotlib
-```
-although this won't install all the backends for matplotlib, which is a headache for another day ([this](http://www.stevenmaude.co.uk/2013/09/installing-matplotlib-in-virtualenv.html) looks promising).
-
 ## Usage
+
+There is a nice example [here](https://ocefpaf.github.io/python4oceanographers/blog/2014/07/07/pytides/)
 
 Pytides is in its infancy, and hasn't yet been fully documented. The best way to get started would be to read [this example](https://github.com/sam-cox/pytides/wiki/Example-Pytides-Usage).
 After that, you might try [making your own tide table](https://github.com/sam-cox/pytides/wiki/How-to-make-your-own-Tide-Table-using-Python-and-Pytides), where you can also find a method for handling timezones.
