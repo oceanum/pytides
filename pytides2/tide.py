@@ -314,7 +314,7 @@ class Tide(object):
         partition = float(partition)
         relative: np.ndarray = hours - hours[0]
         total_partitions: int = np.ceil(
-            relative[-1] / partition + 10 * np.finfo(np.float).eps
+            relative[-1] / partition + 10 * np.finfo(float).eps
         ).astype("int")
         return [
             hours[np.floor(np.divide(relative, partition)) == i]
